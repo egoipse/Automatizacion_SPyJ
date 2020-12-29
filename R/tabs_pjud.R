@@ -533,9 +533,13 @@ cuadro8 <- datos_pjud$penal_terminadas_pjud %>%
   asignar_regiones()
 
 
-cuadro <- Reduce(function(x,y) base::merge(x = x, y = y, by = "region", all = TRUE),
-                  list(cuadro1, cuadro2, cuadro3, cuadro4, cuadro5, cuadro6,
-                       cuadro7, cuadro8)) %>% 
+cuadro <- full_join(cuadro1, cuadro2) %>% 
+  full_join(cuadro3) %>% 
+  full_join(cuadro4) %>%
+  full_join(cuadro5) %>%
+  full_join(cuadro6) %>%
+  full_join(cuadro7) %>%
+  full_join(cuadro8) %>%
   a_numeros(1:NCOL(.)) %>% 
   ordenar_regiones() %>% 
   nombrar_regiones() %>% 
@@ -610,14 +614,13 @@ cuadro8 <- datos_pjud$penal_terminadas_pjud %>%
   as.data.frame()
 
 
-cuadro <- cuadro1 %>% 
-  full_join(cuadro2) %>% 
+cuadro <- full_join(cuadro1, cuadro2) %>% 
   full_join(cuadro3) %>% 
-  full_join(cuadro4) %>% 
-  full_join(cuadro5) %>% 
-  full_join(cuadro6) %>% 
-  full_join(cuadro7) %>% 
-  full_join(cuadro8) %>% 
+  full_join(cuadro4) %>%
+  full_join(cuadro5) %>%
+  full_join(cuadro6) %>%
+  full_join(cuadro7) %>%
+  full_join(cuadro8) %>%
   a_numeros(1:NCOL(.)) %>%  
   organizar_delitos() %>%
   select(!Total) %>% 
@@ -656,6 +659,7 @@ if(exists("cuadros_pjud")) { encuadrar(cuadro, "pjud") }
 
 cuadro <- datos_pjud$crimen_pjud %>% 
   group_by(delito) %>% 
+  mutate_at("delito", str_trim) %>% 
   summarise(`Total causas ingresadas` = sum(ingreso),
             `Total causas terminadas` = sum(total_terminos),
             `Sentencia definitiva` = sum(sent_def),
@@ -680,8 +684,9 @@ if(exists("cuadros_pjud")) { encuadrar(cuadro, "pjud") }
 # 12 ----
 
 cuadro <- datos_pjud$familia_ingresadas_pjud %>% 
-  group_by(codigo_ca, codigo, glosa) %>% 
-  summarise(Delitos=n()) %>% 
+  group_by(codigo_ca, codigo) %>%
+  summarise(Delitos=n()) %>%
+  mutate(glosa = NA) %>%  
   ordenar_cortes() %>% 
   pivot_wider(names_from = ca, values_from = Delitos) %>% 
   arrange(codigo) %>%  
@@ -693,7 +698,6 @@ cuadro <- datos_pjud$familia_ingresadas_pjud %>%
   rename(Código = codigo,
          Materia = glosa,
          `Total causas ingresadas` = Total) %>% 
-  mutate_at("Materia", str_to_sentence) %>% 
   a_numeros(c(1,(3:NCOL(.)))) %>% 
   ungroup() %>% 
   as.data.frame()
@@ -707,8 +711,9 @@ if(exists("cuadros_pjud")) { encuadrar(cuadro, "pjud") }
 # 13 ----
 
 cuadro <- datos_pjud$familia_terminadas_pjud %>% 
-  group_by(codigo_ca, codigo, glosa) %>% 
+  group_by(codigo_ca, codigo) %>% 
   summarise(Delitos=n()) %>% 
+  mutate(glosa = NA) %>%  
   ordenar_cortes() %>% 
   pivot_wider(names_from = ca, values_from = Delitos) %>% 
   arrange(codigo) %>%  
@@ -720,7 +725,6 @@ cuadro <- datos_pjud$familia_terminadas_pjud %>%
   rename(Código = codigo,
          Materia = glosa,
          `Total causas terminas` = Total) %>% 
-  mutate_at("Materia", str_to_sentence) %>% 
   a_numeros(c(1,(3:NCOL(.)))) %>% 
   ungroup() %>% 
   as.data.frame()
@@ -734,8 +738,9 @@ if(exists("cuadros_pjud")) { encuadrar(cuadro, "pjud") }
 # 14 ----
 
 cuadro <- datos_pjud$familia_ingresadas_pjud %>% 
-  group_by(lubridate::month(fecha_ingreso, label = T, abbr = F), codigo, glosa) %>% 
-  summarise(Delitos=n()) %>% 
+  group_by(lubridate::month(fecha_ingreso, label = T, abbr = F), codigo) %>% 
+  summarise(Delitos=n()) %>%
+  mutate(glosa = NA) %>%  
   pivot_wider(names_from = 1, values_from = Delitos) %>% 
   arrange(codigo) %>%   
   sumar_filas(3:NCOL(.)) %>% 
@@ -744,7 +749,6 @@ cuadro <- datos_pjud$familia_ingresadas_pjud %>%
   rename(Código = codigo,
          Materia = glosa,
          `Total causas ingresadas` = Total) %>% 
-  mutate_at("Materia", str_to_sentence) %>%  
   rename_with(str_to_sentence, any_of(colnames(.)[3:NCOL(.)]) ) %>%
   ungroup() %>% 
   as.data.frame() %>%
@@ -761,8 +765,9 @@ if(exists("cuadros_pjud")) { encuadrar(cuadro, "pjud") }
 
 
 cuadro <- datos_pjud$familia_terminadas_pjud %>% 
-  group_by(lubridate::month(fecha_termino, label = T, abbr = F), codigo, glosa) %>% 
+  group_by(lubridate::month(fecha_termino, label = T, abbr = F), codigo) %>% 
   summarise(Delitos=n()) %>% 
+  mutate(glosa = NA) %>%  
   pivot_wider(names_from = 1, values_from = Delitos) %>% 
   arrange(codigo) %>%   
   sumar_filas(3:NCOL(.)) %>% 
@@ -771,7 +776,6 @@ cuadro <- datos_pjud$familia_terminadas_pjud %>%
   rename(Código = codigo,
          Materia = glosa,
          `Total causas terminadas` = Total) %>% 
-  mutate_at("Materia", str_to_sentence) %>%  
   rename_with(str_to_sentence, any_of(colnames(.)[3:NCOL(.)]) ) %>%
   ungroup() %>% 
   as.data.frame() %>%
@@ -858,9 +862,13 @@ cuadro8 <- datos_pjud$familia_terminadas_pjud %>%
   rename(codigo = 1)
 
 
-cuadro <- Reduce(function(x,y) base::merge(x = x, y = y, by = "codigo", all = TRUE),
-                 list(cuadro1, cuadro2, cuadro3, cuadro4, cuadro5, cuadro6,
-                      cuadro7, cuadro8)) %>% 
+cuadro <- full_join(cuadro1, cuadro2) %>% 
+  full_join(cuadro3) %>% 
+  full_join(cuadro4) %>%
+  full_join(cuadro5) %>%
+  full_join(cuadro6) %>%
+  full_join(cuadro7) %>%
+  full_join(cuadro8) %>%
   mutate(Materia = rep(NA, NROW(.))) %>% 
   relocate(Materia, .after = codigo) %>% 
   arrange(codigo) %>% 
@@ -1014,14 +1022,13 @@ cuadro8 <- datos_pjud$divorcios_pjud %>%
   ungroup()
 
 
-cuadro <- cuadro1 %>% 
-  full_join(cuadro2) %>% 
+cuadro <- full_join(cuadro1, cuadro2) %>% 
   full_join(cuadro3) %>% 
-  full_join(cuadro4) %>% 
-  full_join(cuadro5) %>% 
-  full_join(cuadro6) %>% 
-  full_join(cuadro7) %>% 
-  full_join(cuadro8) %>% 
+  full_join(cuadro4) %>%
+  full_join(cuadro5) %>%
+  full_join(cuadro6) %>%
+  full_join(cuadro7) %>%
+  full_join(cuadro8) %>%
   select(!id) %>% 
   a_numeros(c(1,(3:NCOL(.)))) %>% 
   a_cero(3:NCOL(.)) %>% 
@@ -1165,14 +1172,13 @@ cuadro8 <- datos_pjud$vif_pjud %>%
   ordenar_cortes()
 
 
-cuadro <- cuadro1 %>% 
-  full_join(cuadro2) %>% 
+cuadro <- full_join(cuadro1, cuadro2) %>% 
   full_join(cuadro3) %>% 
-  full_join(cuadro4) %>% 
-  full_join(cuadro5) %>% 
-  full_join(cuadro6) %>% 
-  full_join(cuadro7) %>% 
-  full_join(cuadro8) %>% 
+  full_join(cuadro4) %>%
+  full_join(cuadro5) %>%
+  full_join(cuadro6) %>%
+  full_join(cuadro7) %>%
+  full_join(cuadro8) %>%
   a_numeros(2:NCOL(.))  %>%
   a_cero(2:NCOL(.)) %>%
   sumar_columnas(2:NCOL(.), pos = 1) %>% 
@@ -1577,14 +1583,13 @@ cuadro10 <- datos_pjud$cobranza_terminadas_pjud %>%
   as.data.frame()
 
 
-cuadro <- cuadro1 %>% 
-  full_join(cuadro2) %>% 
+cuadro <- full_join(cuadro1, cuadro2) %>% 
   full_join(cuadro3) %>% 
-  full_join(cuadro4) %>% 
-  full_join(cuadro5) %>% 
-  full_join(cuadro6) %>% 
-  full_join(cuadro7) %>% 
-  full_join(cuadro8) %>% 
+  full_join(cuadro4) %>%
+  full_join(cuadro5) %>%
+  full_join(cuadro6) %>%
+  full_join(cuadro7) %>%
+  full_join(cuadro8) %>%
   full_join(cuadro9) %>% 
   full_join(cuadro10)
 
@@ -1660,7 +1665,7 @@ if(exists("cuadros_pjud")) { encuadrar(cuadro, "pjud") }
 
 # Guardamos ----
 
-if(exists("resultado_validacion")) {
+if(!is.na(diccionario$meta$cont[which(diccionario$meta$id == "validador_pjud")]))  {
   
   if(NROW(resultado_validacion) > 0 ) {
     

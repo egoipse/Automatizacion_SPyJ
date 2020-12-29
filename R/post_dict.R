@@ -67,6 +67,12 @@ for(i in 1:length(orden_familias_delitos)) {
   # orden_familias[[i]] <- c()
 }
 
+orden_vif <- list(`Violencia Intrafamiliar a Mujer` = "Violencia Intrafamiliar a Mujer",
+                  `Violencia Intrafamiliar a hombre` = "Violencia Intrafamiliar a hombre",
+                  `Violencia Intrafamiliar a niño` = "Violencia Intrafamiliar a niño",
+                  `Violencia Intrafamiliar a adulto mayor` = "Violencia Intrafamiliar a adulto mayor",
+                  `Violencia Intrafamiliar` = "Violencia Intrafamiliar")
+
 
 organizar_delitos <- function(tabla) {
   
@@ -370,6 +376,9 @@ organizar_ca_x_materia <- function(df, cols_tot, ...) {
   
 
 
+# Funciones de tabulación y validación final ----
+
+
 encuadrar <- function(cuadro, fuente) {
   
   # Con esta función se genera cada cuadro en una hoja de excel. La fuente debe
@@ -483,7 +492,7 @@ encuadrar <- function(cuadro, fuente) {
           
         } else {
         
-          fila <- notas$fila[i] - 6
+          fila <- notas$fila[i] - 3
           
         }
         
@@ -904,8 +913,32 @@ a_validar <- function(cuadro, fuente) {
     comparacion$col <- rep("Las tablas tienen distintas dimensiones. Igualala las filas/columnas de ambas y repite la validacón", NROW(comparacion))
     
   } else {
-  
-    comparacion$col <- LETTERS[comparacion$col]
+    
+    for(i in seq_len(NROW(comparacion))) {
+    
+      if(as.numeric(comparacion$col[i]) < 27) {
+    
+        comparacion$col[i] <- LETTERS[as.numeric(comparacion$col[i])]
+      
+      } else if(as.numeric(comparacion$col[i]) > 26 & as.numeric(comparacion$col[i]) < 53  ) {
+        
+        comparacion$col[i] <- str_c("A", LETTERS[as.numeric(comparacion$col[i]) - 26])
+        
+      } else if(as.numeric(comparacion$col[i]) > 52 & as.numeric(comparacion$col[i]) < 79  ) {
+        
+        comparacion$col[i] <- str_c("B", LETTERS[as.numeric(comparacion$col[i]) - 52])
+        
+      } else if(as.numeric(comparacion$col[i]) > 78 & as.numeric(comparacion$col[i]) < 105  ) {
+        
+        comparacion$col[i] <- str_c("C", LETTERS[as.numeric(comparacion$col[i]) - 78])
+        
+      } else if(as.numeric(comparacion$col[i]) > 104 & as.numeric(comparacion$col[i]) < 131  ) {
+        
+        comparacion$col[i] <- str_c("D", LETTERS[as.numeric(comparacion$col[i]) - 104])
+        
+      }
+      
+    }
     
   }
   

@@ -13,7 +13,7 @@ if(exists("validador_pdi")) {
 }
 
 
-if(exists("datos_pdi")) {
+if(!is.na(diccionario$meta$cont[which(diccionario$meta$id == "procesar_pdi")])) {
   
   cuadros_pdi <- createWorkbook()
   
@@ -1381,7 +1381,7 @@ if(exists("cuadros_pdi")) { encuadrar(cuadro, "pdi") }
 
 # Guardamos ----
 
-if(exists("resultado_validacion")) {
+if(!is.na(diccionario$meta$cont[which(diccionario$meta$id == "validador_pdi")])) {
   
    if(NROW(resultado_validacion) > 0 ) {
     

@@ -223,7 +223,7 @@ ordenar_dmcs_pdi <- function(tabla) {
     } else if(tabla[i, "dmcs"] == "DROGAS") {
       tabla[i, c("DMCS", "orden")] <- c("Drogas", 7)
     } else if(tabla[i, "dmcs"] == "VIOLENCIA INTRAFAMILIAR") {
-      tabla[i, c("DMCS", "orden")] <- c("Violencia Intrafamiliar", 8)
+      tabla[i, c("DMCS", "orden")] <- c("Violencia intrafamiliar", 8)
     } else if(tabla[i, "dmcs"] == "DELITOS INFORMATICOS") {
       tabla[i, c("DMCS", "orden")] <- c("Delitos informáticos", 9)
     } else if(tabla[i, "dmcs"] == "DELITOS MEDIO AMBIENTALES") {
@@ -307,14 +307,14 @@ asignar_regiones <- function(tabla) {
   
   tabla$region <- sapply(tabla$region, function(x) {
   
-    if(str_trim(x) %in% c("REGIÓN METROPOLITANA DE SANTIAGO",
-                "REGIÓN DE AYSÉN DEL GENERAL CARLOS IBÁÑEZ DEL CAMPO" )) {
+    if(str_trim(str_to_upper(x)) %in% c("REGIÓN METROPOLITANA DE SANTIAGO",
+                "REGIÓN DE AYSÉN DEL GENERAL CARLOS IBÁÑEZ DEL CAMPO")) {
     
       x <- diccionario$regiones$id[which(str_trim(x) == str_to_upper(with(diccionario$regiones,
                                                                 paste(prefijo2, nombre,
                                                                        sufijo1, sep = " "))))]
         
-    } else if(str_trim(x) %in% c("REGIÓN DEL LIBERTADOR GENERAL BERNARDO O'HIGGINS") ) {
+    } else if(str_trim(str_to_upper(x)) %in% c("REGIÓN DEL LIBERTADOR GENERAL BERNARDO O'HIGGINS") ) {
       
       x <- diccionario$regiones$id[which(str_trim(x) == str_to_upper(with(diccionario$regiones,
                                                                 paste0(prefijo2,
@@ -323,13 +323,13 @@ asignar_regiones <- function(tabla) {
                                                                        nombre
                                                                       ))))]
     
-    } else if(str_trim(x) %in% c("REGIÓN DE MAGALLANES Y ANTÁRTICA CHILENA") ) {
+    } else if(str_trim(str_to_upper(x)) %in% c("REGIÓN DE MAGALLANES Y ANTÁRTICA CHILENA") ) {
       
       x <- 12
         
     } else {
       
-      if(str_trim(x) %in% c("REGIÓN DEL BÍO-BÍO")) {
+      if(str_trim(str_to_upper(x)) %in% c("REGIÓN DEL BÍO-BÍO")) {
         
         x <- "REGIÓN DEL BIOBÍO"
         
@@ -342,6 +342,163 @@ asignar_regiones <- function(tabla) {
     
     }, simplify = "vector" 
   )
+  
+  return(tabla)
+  
+}
+
+
+# Regiones para Accidentes
+
+regiones_accidentes <- function(tabla) {
+  
+  tabla <- mutate(tabla,
+                  region = case_when(region %in% c("Región de Antofagasta", "II") ~ 2,
+                                     region %in% c("Región de Arica y Parinacota", "XV") ~ 15,
+                                     region %in% c("Región de Atacama", "III") ~ 3,
+                                     region %in% c("Región de Aysen del Gral. Carlos Ibañez del Campo", "XI") ~ 11,
+                                     region %in% c("Región de Coquimbo", "IV") ~ 4,
+                                     region %in% c("Región de la Araucania", "IX") ~ 9,
+                                     region %in% c("Región de Lib. Bdo. O´Higgins", "VI") ~ 6,
+                                     region %in% c("Región de Los Lagos", "X") ~ 10,
+                                     region %in% c("Región de Los Rios", "XIV") ~ 14,
+                                     region %in% c("Región de Magallanes y Antartica Chilena", "XII") ~ 12,
+                                     region %in% c("Región de Ñuble", "XVI") ~ 16,
+                                     region %in% c("Región de Tarapaca", "I") ~ 1,
+                                     region %in% c("Región de Valparaiso", "V") ~ 5,
+                                     region %in% c("Región del Bio-Bio", "VIII") ~ 8,
+                                     region %in% c("Región del Maule", "VII") ~ 7,
+                                     region %in% c("Región Metropolitana", "R.M.") ~ 13
+                  ))
+  
+  return(tabla)
+  
+}
+
+
+ordenar_meses <- function(tabla) {
+  
+  tabla <- mutate(tabla,
+      orden = case_when(str_to_lower(fecha) == "enero" ~ 1,
+        str_to_lower(fecha) == "febrero" ~ 2,
+        str_to_lower(fecha) == "marzo" ~ 3,
+        str_to_lower(fecha) == "abril" ~ 4,
+        str_to_lower(fecha) == "mayo" ~ 5,
+        str_to_lower(fecha) == "junio" ~ 6,
+        str_to_lower(fecha) == "julio" ~ 7,
+        str_to_lower(fecha) == "agosto" ~ 8,
+        str_to_lower(fecha) == "septiembre" ~ 9,
+        str_to_lower(fecha) == "octubre" ~ 10,
+        str_to_lower(fecha) == "noviembre" ~ 11,
+        str_to_lower(fecha) == "diciembre" ~ 12
+      )
+    ) %>%
+    arrange(orden) %>%
+    select(!orden) %>%
+    as.data.frame()
+  
+  return(tabla)
+  
+}
+
+
+resultados_accidente <- function(tabla) {
+  
+  tabla <-  mutate(tabla,
+      orden = case_when(resultado == "GRAVE" ~ 4,
+        resultado == "ILESO" ~ 1,
+        resultado == "LEVE" ~ 2,
+        resultado == "MENOS GRAVE" ~ 3,
+        resultado == "MUERTO" ~ 5),
+      resultado = case_when(resultado == "GRAVE" ~ "Lesionados graves",
+        resultado == "ILESO" ~ "Personas ilesas",
+        resultado == "LEVE" ~ "Lesionados leves",
+        resultado == "MENOS GRAVE" ~ "Lesionados menos graves",
+        resultado == "MUERTO" ~ "Personas fallecidas")
+    ) %>%
+    arrange(orden) %>%
+    select(!orden)
+  
+  return(tabla)
+  
+}
+
+organizar_dmcs_cch <- function(tabla) {
+  
+  totales <- c("Total", colSums(tabla[,4:(NCOL(tabla))], na.rm = T))
+  
+  sum_robos <- c("Robos",
+                 colSums(tabla[which(tabla$`1dmcs` == "Robos"),4:(NCOL(tabla))], na.rm = T))
+  
+  
+  tabla <- split(tabla, as.factor(tabla$`1dmcs`)) 
+  
+  for(i in 1:length(tabla)) {
+    
+    if(names(tabla)[i] %notin% c("Robos")) {
+      
+      tabla[[i]] <- rbind(c("", "", str_to_sentence(names(tabla)[[i]]),colSums(tabla[[i]][,4:(NCOL(tabla[[i]]))], na.rm = T)), tabla[[i]]) 
+      
+      tabla[[i]][,1:2] <- NULL
+      
+      colnames(tabla[[i]])[1] <- "DMCS"
+      
+      tabla[[i]] <- filter(tabla[[i]],
+                           DMCS == str_to_sentence(names(tabla)[[i]]))
+      
+      
+    }
+    
+  }
+  
+  tabla <- tabla[names(orden_dmcs_cch)]
+  
+  tabla$Robos <- split(tabla$Robos, as.factor(tabla$Robos$`2dmcs`))
+  
+  
+  for(i in 1:length(tabla$Robos)) {
+    
+    tabla$Robos[[i]] <- rbind(c("", "", str_to_sentence(names(tabla$Robos)[[i]]),colSums(tabla$Robos[[i]][,4:(NCOL(tabla$Robos[[i]]))], na.rm = T)), tabla$Robos[[i]])
+    
+    tabla$Robos[[i]][,1:2] <- NULL 
+    
+    colnames(tabla$Robos[[i]])[1] <- "DMCS"
+    
+  }
+  
+  tabla$Robos <- do.call("rbind", tabla$Robos)
+  
+  tabla <- do.call("rbind", tabla) %>% 
+    rbind(totales, sum_robos, .) %>% 
+    mutate_at("DMCS", str_to_sentence) %>%
+    mutate_at("DMCS", str_trim) %>%
+    mutate(DMCS = case_when(DMCS == "Robo de accesorios de vehículos/especies interior vehículos" ~ "Robo de accesorios de vehículos",
+                            DMCS == "Robo en lugar habitado o destinado a la habitación" ~ "Robo en lugar habitado",
+                            TRUE ~ as.character(DMCS)
+    ),
+    orden = case_when(DMCS == "Total" ~ 1,
+                      DMCS == "Robos" ~ 2,
+                      DMCS == "Robos violentos" ~ 3,
+                      DMCS == "Robo con violencia" ~ 4,
+                      DMCS == "Robo con intimidación" ~ 5,
+                      DMCS == "Robo por sorpresa" ~ 6,
+                      DMCS == "Robo con fuerza" ~ 7,
+                      DMCS == "Robo de vehículo motorizado" ~ 8,
+                      DMCS == "Robo de accesorios de vehículos" ~ 9,
+                      DMCS == "Robo en lugar habitado" ~ 10,
+                      DMCS == "Robo en lugar no habitado" ~ 11,
+                      DMCS == "Otros robos con fuerza" ~ 12,
+                      DMCS == "Homicidios" ~ 13,
+                      DMCS == "Violaciones" ~ 14,
+                      DMCS == "Lesiones" ~ 15,
+                      DMCS == "Hurtos" ~ 16
+    )
+    ) %>% 
+    arrange(orden) %>% 
+    select(!orden) %>% 
+    a_numeros(2:NCOL(.)) %>% 
+    a_cero(2:NCOL(.)) %>% 
+    as.data.frame()
   
   return(tabla)
   

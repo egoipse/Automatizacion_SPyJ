@@ -10,7 +10,7 @@
 
 # 1. CONFIGURACIÓN INICIAL ----
 
-# options(warn=-1)
+options(warn=-1)
 
 # 1.1 Carga de paquetes ----
 
@@ -20,7 +20,7 @@ if(!require("pacman")) {
   install.packages("pacman")
 }
 
-pacman::p_load("tidyverse", "here", "tools", "openxlsx")
+pacman::p_load("tidyverse", "here", "tools", "openxlsx", "lubridate")
 
 
 # 1.2 Carga de funciones generales ----
@@ -52,7 +52,7 @@ if(!exists('formatos') & file.exists(here("R", "formatos.R"))) {
 
 # 2. CARGA DE DICCIONARIO Y DATOS ----
 
-ingresar_diccionario("~/Dropbox/INE/PDI/diccionario_estpol_2019.xlsx")
+ingresar_diccionario("~/Git/Automatizacion_SPyJ/data/diccionario_spyj_2019.xlsx")
 
 # ingresar_diccionario()
 

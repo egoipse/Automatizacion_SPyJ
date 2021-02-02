@@ -52,9 +52,7 @@ if(!exists('formatos') & file.exists(here("R", "formatos.R"))) {
 
 # 2. CARGA DE DICCIONARIO Y DATOS ----
 
-ingresar_diccionario("~/Git/Automatizacion_SPyJ/data/diccionario_spyj_2019.xlsx")
-
-# ingresar_diccionario()
+ingresar_diccionario()
 
 if(!exists("organizar_delitos") & file.exists(here("R", "especificas.R"))) {
   
